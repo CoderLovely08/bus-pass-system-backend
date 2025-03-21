@@ -1,9 +1,6 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -26,6 +23,11 @@ model SystemUsersInfo {
   createdAt           DateTime  @default(now()) @map("system_user_created_at")
   updatedAt           DateTime  @updatedAt @map("system_user_updated_at")
 
+  // Relations
+  passApplications PassApplication[] // For passengers
+  conductorScans   ConductorScan[] // For conductors
+  passApprovals    PassApproval[] // For admins
+
   @@map("SystemUsersInfo")
 }
 
@@ -38,4 +40,131 @@ model UserType {
   systemUsers SystemUsersInfo[]
 
   @@map("UserTypeInfo")
+}
+
+model PassType {
+  id           Int      @id @default(autoincrement()) @map("pass_type_id")
+  name         String   @map("pass_type_name") // e.g., "Weekly", "Monthly"
+  description  String?  @map("pass_type_description")
+  durationDays Int      @map("pass_type_duration_days") // 7 for weekly, 30 for monthly
+  price        Decimal  @map("pass_type_price")
+  isActive     Boolean  @default(true) @map("pass_type_is_active")
+  createdAt    DateTime @default(now()) @map("pass_type_created_at")
+  updatedAt    DateTime @updatedAt @map("pass_type_updated_at")
+
+  // Relations
+  passApplications PassApplication[]
+
+  @@map("PassTypeInfo")
+}
+
+model PassApplication {
+  id                Int               @id @default(autoincrement()) @map("application_id")
+  user              SystemUsersInfo   @relation(fields: [userId], references: [id])
+  userId            Int               @map("user_id")
+  passType          PassType          @relation(fields: [passTypeId], references: [id])
+  passTypeId        Int               @map("pass_type_id")
+  status            ApplicationStatus @default(PENDING) @map("application_status")
+  documentsUploaded Boolean           @default(false) @map("documents_uploaded")
+  paymentStatus     PaymentStatus     @default(PENDING) @map("payment_status")
+  createdAt         DateTime          @default(now()) @map("application_created_at")
+  updatedAt         DateTime          @updatedAt @map("application_updated_at")
+
+  // Relations
+  documents Document[]
+  payments  Payment[]
+  busPass   BusPass?
+  approvals PassApproval[]
+
+  @@map("PassApplicationInfo")
+}
+
+model Document {
+  id            Int             @id @default(autoincrement()) @map("document_id")
+  application   PassApplication @relation(fields: [applicationId], references: [id])
+  applicationId Int             @map("application_id")
+  documentType  String          @map("document_type") // e.g., "ID Proof", "Address Proof"
+  documentPath  String          @map("document_path") // File storage path
+  uploadedAt    DateTime        @default(now()) @map("document_uploaded_at")
+
+  @@map("DocumentInfo")
+}
+
+model Payment {
+  id            Int             @id @default(autoincrement()) @map("payment_id")
+  application   PassApplication @relation(fields: [applicationId], references: [id])
+  applicationId Int             @map("application_id")
+  amount        Decimal         @map("payment_amount")
+  transactionId String?         @map("payment_transaction_id")
+  paymentMethod String?         @map("payment_method")
+  status        PaymentStatus   @default(PENDING) @map("payment_status")
+  paidAt        DateTime?       @map("payment_paid_at")
+  createdAt     DateTime        @default(now()) @map("payment_created_at")
+  updatedAt     DateTime        @updatedAt @map("payment_updated_at")
+
+  @@map("PaymentInfo")
+}
+
+model BusPass {
+  id            Int             @id @default(autoincrement()) @map("bus_pass_id")
+  passNumber    String          @unique @map("bus_pass_number")
+  application   PassApplication @relation(fields: [applicationId], references: [id])
+  applicationId Int             @unique @map("application_id")
+  qrCode        String          @map("bus_pass_qr_code") // QR code data or path
+  validFrom     DateTime        @map("bus_pass_valid_from")
+  validUntil    DateTime        @map("bus_pass_valid_until")
+  isActive      Boolean         @default(true) @map("bus_pass_is_active")
+  createdAt     DateTime        @default(now()) @map("bus_pass_created_at")
+  updatedAt     DateTime        @updatedAt @map("bus_pass_updated_at")
+
+  // Relations
+  scans ConductorScan[]
+
+  @@map("BusPassInfo")
+}
+
+model ConductorScan {
+  id          Int             @id @default(autoincrement()) @map("scan_id")
+  busPass     BusPass         @relation(fields: [busPassId], references: [id])
+  busPassId   Int             @map("bus_pass_id")
+  conductor   SystemUsersInfo @relation(fields: [conductorId], references: [id])
+  conductorId Int             @map("conductor_id")
+  scanMethod  ScanMethod      @map("scan_method")
+  isValid     Boolean         @map("scan_is_valid") // Result of validation
+  scanTime    DateTime        @default(now()) @map("scan_time")
+  busRoute    String?         @map("bus_route")
+  busNumber   String?         @map("bus_number")
+
+  @@map("ConductorScanInfo")
+}
+
+model PassApproval {
+  id            Int               @id @default(autoincrement()) @map("approval_id")
+  application   PassApplication   @relation(fields: [applicationId], references: [id])
+  applicationId Int               @map("application_id")
+  admin         SystemUsersInfo   @relation(fields: [adminId], references: [id])
+  adminId       Int               @map("admin_id")
+  status        ApplicationStatus @map("approval_status")
+  notes         String?           @map("approval_notes")
+  approvedAt    DateTime          @default(now()) @map("approved_at")
+
+  @@map("PassApprovalInfo")
+}
+
+enum ApplicationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+enum ScanMethod {
+  QR_CODE
+  MANUAL_ENTRY
 }
