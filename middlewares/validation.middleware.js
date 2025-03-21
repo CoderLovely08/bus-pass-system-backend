@@ -1,4 +1,3 @@
-
 import {
   formatPhoneNumber,
   validateAlphanumericWithSpecialChars,
@@ -246,10 +245,19 @@ export const validateRequestParams = (schema) => {
   return async (req, res, next) => {
     for (const item of schema) {
       const fieldValue = req.params[item.field];
-      console.log(fieldValue);
       if (!fieldValue) {
         return APIResponse.error(res, `${item.field} is required`, 400);
       }
+
+      const error = validateField(
+        fieldValue,
+        item.type,
+        item.field,
+        res,
+        item.required
+      );
+      if (error) return error;
+
       req.params[item.field] = transformValue(item.type, fieldValue);
     }
     next();

@@ -29,14 +29,14 @@ export const validateToken = async (req, res, next) => {
     // Verify token
     const decoded = decodeJwtToken(token);
 
-    if (!decoded.success) {
+    if (!decoded) {
       return res.status(401).json({
         success: false,
         message: "Invalid token",
       });
     }
 
-    req.user = decoded.data;
+    req.user = decoded;
 
     next();
   } catch (error) {

@@ -180,7 +180,8 @@ export const parsePhoneNumber = (phoneNumber, countryCode) => {
  */
 export const generateRandomString = (length = 8) => {
   try {
-    return crypto.randomUUID().split("-")[0].toUpperCase();
+    const randomString = crypto.randomBytes(length).toString("hex");
+    return randomString.toUpperCase();
   } catch (error) {
     console.error(`Error in generateRandomString: ${error.message}`);
     return null;
@@ -380,6 +381,16 @@ export const formatMacAddress = (macAddress) => {
       .toUpperCase();
   } catch (error) {
     console.error(`Error in formatMacAddress: ${error.message}`);
+    return null;
+  }
+};
+
+
+export const generateQRCode = (data) => {
+  try {
+    return qrcode.toDataURL(data);
+  } catch (error) {
+    console.error(`Error in generateQRCode: ${error.message}`);
     return null;
   }
 };
