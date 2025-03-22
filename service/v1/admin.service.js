@@ -120,15 +120,20 @@ export class AdminService {
   }) {
     try {
       return await prisma.$transaction(async (prisma) => {
-        const application = await prisma.passApproval.findUnique({
-          where: { applicationId },
+        const application = await prisma.passApplication.findUnique({
+          where: { id: applicationId },
           include: {
-            application: true,
+            passType: true,
+            busPass: true,
           },
         });
 
         if (!application) {
           throw new CustomError("Application not found", 404);
+        }
+
+        if (application.busPass) {
+          throw new CustomError("Pass already created", 400);
         }
 
         if (application.status === status) {
@@ -139,12 +144,17 @@ export class AdminService {
         }
 
         // Update application status
-        const updatedApplication = await prisma.passApplication.update({
-          where: { id: applicationId },
-          data: {
+        const updatedApplication = await prisma.passApproval.upsert({
+          where: { applicationId },
+          update: {
             status,
-            reviewedBy: adminId,
-            reviewedAt: new Date(),
+            admin: { connect: { id: adminId } },
+          },
+          create: {
+            applicationId,
+            adminId,
+            status,
+            notes: remarks,
           },
         });
 
@@ -152,17 +162,23 @@ export class AdminService {
         if (status === "APPROVED") {
           const validFrom = new Date();
           const validTo = new Date();
-          validTo.setDate(validTo.getDate() + application.passType.duration);
+          validTo.setDate(
+            validTo.getDate() + application.passType.durationDays
+          );
 
-          await prisma.passes.create({
+          const passNumber = generateRandomString(10);
+
+          await prisma.busPass.create({
             data: {
-              passNumber: generateRandomString(10),
-              userId: application.userId,
-              passTypeId: application.passTypeId,
-              applicationId: application.id,
-              status: "PENDING_PAYMENT",
+              passNumber,
+              application: {
+                connect: {
+                  id: applicationId,
+                },
+              },
               validFrom,
-              validTo,
+              validUntil: validTo,
+              qrCode: passNumber,
             },
           });
         }

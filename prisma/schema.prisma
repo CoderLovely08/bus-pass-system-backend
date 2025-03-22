@@ -141,7 +141,7 @@ model ConductorScan {
 model PassApproval {
   id            Int               @id @default(autoincrement()) @map("approval_id")
   application   PassApplication   @relation(fields: [applicationId], references: [id])
-  applicationId Int               @map("application_id")
+  applicationId Int               @unique @map("application_id")
   admin         SystemUsersInfo   @relation(fields: [adminId], references: [id])
   adminId       Int               @map("admin_id")
   status        ApplicationStatus @map("approval_status")
