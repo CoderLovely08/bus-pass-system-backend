@@ -57,6 +57,7 @@ export class AuthController {
       const { email, password } = req.body;
 
       const user = await AuthService.validateSystemUser(email, password);
+      console.log(user);
 
       AuthController.setupCredentials(res, {
         userId: user.id,

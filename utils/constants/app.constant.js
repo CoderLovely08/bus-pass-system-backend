@@ -7,9 +7,9 @@ export const APPLICATION_ENV_TYPES = Object.freeze({
 
 // User Types
 export const USER_TYPES = Object.freeze({
-  SUPER_ADMIN: "SuperAdmin",
+  PASSENGER: "Passenger",
   ADMIN: "Admin",
-  USER: "User",
+  CONDUCTOR: "Conductor",
 });
 
 // Token Types

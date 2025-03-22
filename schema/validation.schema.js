@@ -10,7 +10,7 @@ export class ValidationSchema {
   // Login Schema
   static loginSchema = [
     { field: "email", type: VALIDATION_TYPES.EMAIL, required: true },
-    { field: "password", type: VALIDATION_TYPES.PASSWORD, required: true },
+    { field: "password", type: VALIDATION_TYPES.STRING, required: true },
   ];
 
   // Forgot Password Schema

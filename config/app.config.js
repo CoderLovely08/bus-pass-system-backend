@@ -21,6 +21,7 @@ export const config = {
     URL: process.env.SUPABASE_URL,
     PUBLIC_KEY: process.env.SUPABASE_PUBLIC_KEY,
     BUCKET_NAME: process.env.SUPABASE_BUCKET_NAME,
+    DOCUMENTS_FOLDER: "documents",
   },
   JWT: {
     ACCESS_TOKEN: {
