@@ -135,14 +135,13 @@ export class PassengerController {
    */
   static async handlePostPayment(req, res) {
     try {
-      const { passId, paymentMethod, amount } = req.body;
+      const { passId, paymentMethod } = req.body;
       const userId = req.user.userId;
 
       const payment = await PassengerService.processPayment({
         userId,
         passId,
         paymentMethod,
-        amount,
       });
 
       return APIResponse.success(

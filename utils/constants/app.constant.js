@@ -124,3 +124,10 @@ export const PRISMA_ERROR_CODES = {
     status: 400,
   },
 };
+
+export const PAYMENT_STATUS = Object.freeze({
+  PENDING: "PENDING",
+  COMPLETED: "COMPLETED",
+  FAILED: "FAILED",
+  REFUNDED: "REFUNDED",
+});

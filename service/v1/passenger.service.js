@@ -1,6 +1,7 @@
 import { prisma } from "../../app.js";
 import { CustomError } from "../core/CustomResponse.js";
 import { generateRandomString } from "../../utils/helpers/app.helpers.js";
+import { PAYMENT_STATUS } from "../../utils/constants/app.constant.js";
 
 export class PassengerService {
   /**
@@ -139,17 +140,23 @@ export class PassengerService {
    */
   static async getAllPasses(userId) {
     try {
-      const passes = await prisma.BusPass.findMany({
+      const passes = await prisma.passApplication.findMany({
         where: {
-          application: {
-            userId: userId,
-          },
+          userId: userId,
         },
         include: {
-          application: {
+          passType: true,
+          payments: true,
+          documents: true,
+          approvals: true,
+          busPass: {
             include: {
-              passType: true,
-              payments: true,
+              application: {
+                include: {
+                  passType: true,
+                  payments: true,
+                },
+              },
             },
           },
         },
@@ -201,50 +208,56 @@ export class PassengerService {
   static async processPayment({ userId, passId, paymentMethod, amount }) {
     try {
       return await prisma.$transaction(async (prisma) => {
-        const busPass = await prisma.BusPass.findUnique({
+        const busPass = await prisma.passApplication.findUnique({
           where: { id: passId },
           include: {
-            application: {
+            passType: true,
+            payments: true,
+            documents: true,
+            approvals: true,
+            busPass: {
               include: {
-                passType: true,
+                application: {
+                  include: {
+                    passType: true,
+                  },
+                },
               },
             },
           },
         });
 
+        console.log(busPass);
+
         if (!busPass) {
           throw new CustomError("Pass not found", 404);
         }
 
-        if (busPass.application.userId !== userId) {
-          throw new CustomError("Unauthorized access", 403);
-        }
-
-        if (busPass.application.paymentStatus !== "PENDING") {
+        if (busPass.paymentStatus !== "PENDING") {
           throw new CustomError("Payment already processed", 400);
         }
 
-        if (busPass.application.passType.price.toNumber() !== amount) {
-          throw new CustomError("Invalid payment amount", 400);
-        }
-
         // Create payment record
-        const payment = await prisma.Payment.create({
+        const payment = await prisma.payment.create({
           data: {
-            applicationId: busPass.applicationId,
-            amount,
+            application: {
+              connect: {
+                id: busPass.id,
+              },
+            },
+            amount: busPass.passType.price,
             paymentMethod,
             status: "COMPLETED",
-            transactionId: generateRandomString(),
+            transactionId: generateRandomString(6),
             paidAt: new Date(),
           },
         });
 
         // Update application payment status
         await prisma.passApplication.update({
-          where: { id: busPass.applicationId },
+          where: { id: busPass.id },
           data: {
-            paymentStatus: "COMPLETED",
+            paymentStatus: PAYMENT_STATUS.COMPLETED,
           },
         });
 

@@ -3,6 +3,26 @@ import { AdminService } from "../../service/v1/admin.service.js";
 
 export class AdminController {
   /**
+   * Handle get user types
+   * @param {Object} req - Request object
+   * @param {Object} res - Response object
+   * @returns {Object} Response object
+   */
+  static async handleGetUserTypes(req, res) {
+    try {
+      const userTypes = await AdminService.getUserTypes();
+
+      return APIResponse.success(
+        res,
+        userTypes,
+        "User types retrieved successfully"
+      );
+    } catch (error) {
+      return APIResponse.error(res, error.message, error.statusCode);
+    }
+  }
+
+  /**
    * Handle get all applications
    * @param {Object} req - Request object
    * @param {Object} res - Response object
@@ -40,7 +60,9 @@ export class AdminController {
     try {
       const { applicationId } = req.params;
 
-      const application = await AdminService.getApplicationDetails(applicationId);
+      const application = await AdminService.getApplicationDetails(
+        applicationId
+      );
 
       return APIResponse.success(
         res,
@@ -184,4 +206,4 @@ export class AdminController {
       return APIResponse.error(res, error.message, error.statusCode);
     }
   }
-} 
+}

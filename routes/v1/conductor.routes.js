@@ -1,34 +1,27 @@
 import express from "express";
 import { validateToken, checkRole } from "../../middlewares/auth.middleware.js";
 import { higherOrderUserDataValidation } from "../../middlewares/validation.middleware.js";
-import { VALIDATION_TYPES } from "../../utils/constants/app.constant.js";
+import {
+  USER_TYPES,
+  VALIDATION_TYPES,
+} from "../../utils/constants/app.constant.js";
 import { ConductorController } from "../../controllers/v1/Conductor.controller.js";
 
 const router = express.Router();
-
-// Verify pass by QR code
-router.post(
-  "/verify-qr",
-  validateToken,
-  checkRole(["CONDUCTOR"]),
-  higherOrderUserDataValidation([
-    {
-      field: "qrData",
-      type: VALIDATION_TYPES.STRING,
-      required: true,
-    },
-  ]),
-  ConductorController.handlePostVerifyQR
-);
 
 // Verify pass by pass number
 router.post(
   "/verify-pass",
   validateToken,
-  checkRole(["CONDUCTOR"]),
+  checkRole([USER_TYPES.CONDUCTOR]),
   higherOrderUserDataValidation([
     {
       field: "passNumber",
+      type: VALIDATION_TYPES.STRING,
+      required: true,
+    },
+    {
+      field: "scanMethod",
       type: VALIDATION_TYPES.STRING,
       required: true,
     },
@@ -40,8 +33,8 @@ router.post(
 router.get(
   "/verifications",
   validateToken,
-  checkRole(["CONDUCTOR"]),
+  checkRole([USER_TYPES.CONDUCTOR]),
   ConductorController.handleGetVerificationHistory
 );
 
-export default router; 
+export default router;

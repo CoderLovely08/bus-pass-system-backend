@@ -55,17 +55,12 @@ router.post(
   higherOrderUserDataValidation([
     {
       field: "passId",
-      type: VALIDATION_TYPES.STRING,
+      type: VALIDATION_TYPES.INTEGER,
       required: true,
     },
     {
       field: "paymentMethod",
       type: VALIDATION_TYPES.STRING,
-      required: true,
-    },
-    {
-      field: "amount",
-      type: VALIDATION_TYPES.NUMBER,
       required: true,
     },
   ]),

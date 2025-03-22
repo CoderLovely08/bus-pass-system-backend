@@ -2,6 +2,8 @@ import { Router } from "express";
 import { AuthController } from "../../controllers/v1/Auth.controller.js";
 import { higherOrderUserDataValidation } from "../../middlewares/validation.middleware.js";
 import { ValidationSchema } from "../../schema/validation.schema.js";
+import { USER_TYPES } from "../../utils/constants/app.constant.js";
+import { checkRole, validateToken } from "../../middlewares/auth.middleware.js";
 
 const router = Router();
 
@@ -30,6 +32,14 @@ router.post(
  */
 router.post(
   "/system/register",
+  higherOrderUserDataValidation(ValidationSchema.simpleUserOnboardingSchema),
+  AuthController.handlePostSystemUserRegistration
+);
+
+router.post(
+  "/conductor/register",
+  validateToken,
+  checkRole([USER_TYPES.ADMIN]),
   higherOrderUserDataValidation(ValidationSchema.simpleUserOnboardingSchema),
   AuthController.handlePostSystemUserRegistration
 );

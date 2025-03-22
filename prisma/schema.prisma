@@ -47,6 +47,7 @@ model PassType {
   name         String   @map("pass_type_name") // e.g., "Weekly", "Monthly"
   description  String?  @map("pass_type_description")
   durationDays Int      @map("pass_type_duration_days") // 7 for weekly, 30 for monthly
+  perDayLimit  Int      @map("pass_type_per_day_limit")
   price        Decimal  @map("pass_type_price")
   isActive     Boolean  @default(true) @map("pass_type_is_active")
   createdAt    DateTime @default(now()) @map("pass_type_created_at")

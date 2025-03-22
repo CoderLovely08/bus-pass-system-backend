@@ -3,32 +3,6 @@ import { ConductorService } from "../../service/v1/conductor.service.js";
 
 export class ConductorController {
   /**
-   * Handle post verify QR
-   * @param {Object} req - Request object
-   * @param {Object} res - Response object
-   * @returns {Object} Response object
-   */
-  static async handlePostVerifyQR(req, res) {
-    try {
-      const { qrData } = req.body;
-      const conductorId = req.user.userId;
-
-      const verificationResult = await ConductorService.verifyPassByQR({
-        qrData,
-        conductorId,
-      });
-
-      return APIResponse.success(
-        res,
-        verificationResult,
-        "Pass verification completed"
-      );
-    } catch (error) {
-      return APIResponse.error(res, error.message, error.statusCode);
-    }
-  }
-
-  /**
    * Handle post verify pass number
    * @param {Object} req - Request object
    * @param {Object} res - Response object
@@ -36,12 +10,13 @@ export class ConductorController {
    */
   static async handlePostVerifyPassNumber(req, res) {
     try {
-      const { passNumber } = req.body;
+      const { passNumber, scanMethod } = req.body;
       const conductorId = req.user.userId;
 
       const verificationResult = await ConductorService.verifyPassByNumber({
         passNumber,
         conductorId,
+        scanMethod,
       });
 
       return APIResponse.success(
@@ -82,4 +57,4 @@ export class ConductorController {
       return APIResponse.error(res, error.message, error.statusCode);
     }
   }
-} 
+}

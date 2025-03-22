@@ -65,6 +65,7 @@ async function main() {
         durationDays: 7,
         price: 175,
         isActive: true,
+        perDayLimit: 3,
       },
       {
         name: "Monthly Pass",
@@ -72,6 +73,7 @@ async function main() {
         durationDays: 30,
         price: 750,
         isActive: true,
+        perDayLimit: 5,
       },
       {
         name: "Quarterly Pass",
@@ -79,6 +81,7 @@ async function main() {
         durationDays: 90,
         price: 2000,
         isActive: true,
+        perDayLimit: 10,
       },
     ],
   });

@@ -13,17 +13,14 @@ export class ConductorService {
     try {
       const { passId, userId, validFrom, validTo } = JSON.parse(qrData);
 
-      const pass = await prisma.passes.findUnique({
-        where: { id: passId },
+      const pass = await prisma.busPass.findUnique({
+        where: { applicationId: passId },
         include: {
-          user: {
-            select: {
-              id: true,
-              fullName: true,
-              email: true,
+          application: {
+            include: {
+              passType: true,
             },
           },
-          passType: true,
         },
       });
 
@@ -84,21 +81,26 @@ export class ConductorService {
    * @param {Object} params - Parameters
    * @param {string} params.passNumber - Pass number
    * @param {string} params.conductorId - Conductor ID
+   * @param {string} params.scanMethod - Scan method
    * @returns {Promise<Object>} Verification result
    */
-  static async verifyPassByNumber({ passNumber, conductorId }) {
+  static async verifyPassByNumber({ passNumber, conductorId, scanMethod }) {
     try {
-      const pass = await prisma.passes.findUnique({
+      const pass = await prisma.busPass.findUnique({
         where: { passNumber },
         include: {
-          user: {
-            select: {
-              id: true,
-              fullName: true,
-              email: true,
+          application: {
+            include: {
+              passType: true,
+              user: {
+                select: {
+                  id: true,
+                  fullName: true,
+                  email: true,
+                },
+              },
             },
           },
-          passType: true,
         },
       });
 
@@ -107,37 +109,24 @@ export class ConductorService {
       }
 
       const now = new Date();
-      const isExpired = now > pass.validTo;
+      const isExpired = now > pass.validUntil;
       const isNotStarted = now < pass.validFrom;
 
       // Create verification record
-      const verification = await prisma.passVerifications.create({
+      const verification = await prisma.conductorScan.create({
         data: {
-          passId: pass.id,
-          conductorId,
-          verificationMethod: "MANUAL",
-          isValid: !isExpired && !isNotStarted && pass.status === "ACTIVE",
-          remarks: isExpired
-            ? "Pass has expired"
-            : isNotStarted
-            ? "Pass validity not started"
-            : pass.status !== "ACTIVE"
-            ? "Pass is not active"
-            : "Pass is valid",
-        },
-        include: {
-          pass: {
-            include: {
-              user: {
-                select: {
-                  id: true,
-                  fullName: true,
-                  email: true,
-                },
-              },
-              passType: true,
+          busPass: {
+            connect: {
+              id: pass.id,
             },
           },
+          conductor: {
+            connect: {
+              id: conductorId,
+            },
+          },
+          scanMethod,
+          isValid: !isExpired && !isNotStarted && pass.status === "ACTIVE",
         },
       });
 
@@ -182,29 +171,33 @@ export class ConductorService {
       }
 
       const [verifications, total] = await Promise.all([
-        prisma.passVerifications.findMany({
+        prisma.conductorScan.findMany({
           where,
           include: {
-            pass: {
+            busPass: {
               include: {
-                user: {
-                  select: {
-                    id: true,
-                    fullName: true,
-                    email: true,
+                application: {
+                  include: {
+                    passType: true,
+                    user: {
+                      select: {
+                        id: true,
+                        fullName: true,
+                        email: true,
+                      },
+                    },
                   },
                 },
-                passType: true,
               },
             },
           },
           orderBy: {
-            createdAt: "desc",
+            id: "desc",
           },
           skip,
           take: limit,
         }),
-        prisma.passVerifications.count({ where }),
+        prisma.conductorScan.count({ where }),
       ]);
 
       return {

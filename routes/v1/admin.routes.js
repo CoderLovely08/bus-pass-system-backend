@@ -1,6 +1,9 @@
 import express from "express";
 import { validateToken, checkRole } from "../../middlewares/auth.middleware.js";
-import { higherOrderUserDataValidation, validateRequestParams } from "../../middlewares/validation.middleware.js";
+import {
+  higherOrderUserDataValidation,
+  validateRequestParams,
+} from "../../middlewares/validation.middleware.js";
 import {
   USER_TYPES,
   VALIDATION_TYPES,
@@ -131,6 +134,14 @@ router.get(
   validateToken,
   checkRole([USER_TYPES.ADMIN]),
   AdminController.handleGetStatistics
+);
+
+// Get user types
+router.get(
+  "/user-types",
+  validateToken,
+  checkRole([USER_TYPES.ADMIN]),
+  AdminController.handleGetUserTypes
 );
 
 export default router;

@@ -1,8 +1,25 @@
 import { prisma } from "../../app.js";
 import { CustomError } from "../core/CustomResponse.js";
 import { generateRandomString } from "../../utils/helpers/app.helpers.js";
+import { PAYMENT_STATUS } from "../../utils/constants/app.constant.js";
 
 export class AdminService {
+  /**
+   * Get user types
+   * @returns {Promise<Object>} User types
+   */
+  static async getUserTypes() {
+    try {
+      const userTypes = await prisma.userType.findMany();
+      return userTypes;
+    } catch (error) {
+      throw new CustomError(
+        error.message || "Error fetching user types",
+        error.statusCode || 500
+      );
+    }
+  }
+
   /**
    * Get all applications
    * @param {Object} params - Parameters
@@ -132,6 +149,10 @@ export class AdminService {
           throw new CustomError("Application not found", 404);
         }
 
+        if (application.paymentStatus !== PAYMENT_STATUS.COMPLETED) {
+          throw new CustomError("Payment is not completed", 400);
+        }
+
         if (application.busPass) {
           throw new CustomError("Pass already created", 400);
         }
@@ -179,6 +200,13 @@ export class AdminService {
               validFrom,
               validUntil: validTo,
               qrCode: passNumber,
+            },
+          });
+
+          await prisma.passApplication.update({
+            where: { id: applicationId },
+            data: {
+              status: status,
             },
           });
         }
