@@ -206,4 +206,24 @@ export class AdminController {
       return APIResponse.error(res, error.message, error.statusCode);
     }
   }
+
+  /**
+   * Handle get all users
+   * @param {Object} req - Request object
+   * @param {Object} res - Response object
+   * @returns {Object} Response object
+   */
+  static async handleGetAllUsers(req, res) {
+    try {
+      const users = await AdminService.getAllUsers();
+
+      return APIResponse.success(
+        res,
+        users,
+        "Users retrieved successfully"
+      );
+    } catch (error) {
+      return APIResponse.error(res, error.message, error.statusCode);
+    }
+  }
 }

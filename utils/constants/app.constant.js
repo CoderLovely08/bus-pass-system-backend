@@ -131,3 +131,9 @@ export const PAYMENT_STATUS = Object.freeze({
   FAILED: "FAILED",
   REFUNDED: "REFUNDED",
 });
+
+export const PASS_STATUS = Object.freeze({
+  PENDING: "PENDING",
+  APPROVED: "APPROVED",
+  REJECTED: "REJECTED",
+});
