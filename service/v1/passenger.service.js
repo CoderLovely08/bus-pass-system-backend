@@ -19,8 +19,6 @@ export class PassengerService {
     documentLink,
     documentType,
   }) {
-    console.log(userId, passTypeId, documentLink, documentType);
-
     try {
       // Check if user exists
       const user = await prisma.systemUsersInfo.findUnique({
@@ -149,16 +147,7 @@ export class PassengerService {
           payments: true,
           documents: true,
           approvals: true,
-          busPass: {
-            include: {
-              application: {
-                include: {
-                  passType: true,
-                  payments: true,
-                },
-              },
-            },
-          },
+          busPass: true,
         },
         orderBy: {
           createdAt: "desc",
