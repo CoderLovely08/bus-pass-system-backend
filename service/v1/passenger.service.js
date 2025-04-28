@@ -216,8 +216,6 @@ export class PassengerService {
           },
         });
 
-        console.log(busPass);
-
         if (!busPass) {
           throw new CustomError("Pass not found", 404);
         }

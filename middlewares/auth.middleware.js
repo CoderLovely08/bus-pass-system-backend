@@ -61,8 +61,6 @@ export const checkRole = (requiredRoles = []) => {
     try {
       const userRole = req.user?.userType || "";
 
-      console.log('userRole', userRole);
-
       if (!requiredRoles.includes(userRole)) {
         return res.status(403).json({
           success: false,

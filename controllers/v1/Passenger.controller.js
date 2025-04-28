@@ -15,9 +15,6 @@ export class PassengerController {
       const { passTypeId, documentType } = req.body;
       const userId = req.user.userId;
 
-      console.log(passTypeId, documentType, userId);
-      
-
       if (!req.file) {
         return APIResponse.error(res, "Document is required", 400);
       }
