@@ -1,7 +1,67 @@
 import { prisma } from "../../app.js";
+import { SCAN_METHOD } from "../../utils/constants/app.constant.js";
 import { CustomError } from "../core/CustomResponse.js";
 
 export class ConductorService {
+
+  /**
+   * Get dashboard
+   * @param {string} conductorId - Conductor ID
+   * @returns {Promise<Object>} Dashboard
+   */
+  static async getDashboard(conductorId) {
+    try {
+      // Today's date
+      const dashboard = await prisma.conductorScan.findMany({
+        where: { conductorId, scanTime: { gte: new Date(new Date().setHours(0, 0, 0, 0)) } },
+        orderBy: {
+          scanTime: "desc",
+        },
+        include: {
+          busPass: {
+            select: {
+              id: true,
+              passNumber: true,
+              isActive: true,
+              application: {
+                select: {
+                  user: {
+                    select: {
+                      id: true,
+                      fullName: true,
+                    }
+                  },
+                  passType: true,
+                }
+              }
+            }
+          },
+        },
+      });
+
+      const totalScans = dashboard.length;
+      const totalValidScans = dashboard.filter(scan => scan.isValid).length;
+      const totalInvalidScans = dashboard.filter(scan => !scan.isValid).length;
+      const totalQRScans = dashboard.filter(scan => scan.scanMethod === SCAN_METHOD.QR_CODE).length;
+      const totalManualScans = dashboard.filter(scan => scan.scanMethod === SCAN_METHOD.MANUAL_ENTRY).length;
+
+      return {
+        dashboard: dashboard.slice(0, 10),
+        totalScans,
+        totalValidScans,
+        totalInvalidScans,
+        totalQRScans,
+        totalManualScans,
+      };
+    } catch (error) {
+      throw new CustomError(
+        error.message || "Error fetching dashboard",
+        error.statusCode || 500
+      );
+    }
+  }
+
+
   /**
    * Verify pass by QR code
    * @param {Object} params - Parameters
@@ -46,10 +106,10 @@ export class ConductorService {
           remarks: isExpired
             ? "Pass has expired"
             : isNotStarted
-            ? "Pass validity not started"
-            : pass.status !== "ACTIVE"
-            ? "Pass is not active"
-            : "Pass is valid",
+              ? "Pass validity not started"
+              : pass.status !== "ACTIVE"
+                ? "Pass is not active"
+                : "Pass is valid",
         },
         include: {
           pass: {
@@ -87,7 +147,15 @@ export class ConductorService {
   static async verifyPassByNumber({ passNumber, conductorId, scanMethod }) {
     try {
       const pass = await prisma.busPass.findUnique({
-        where: { passNumber },
+        where: {
+          passNumber, scans: {
+            some: {
+              scanTime: {
+                gte: new Date(new Date().setDate(new Date().getDate() - 3)),
+              }
+            }
+          }
+        },
         include: {
           application: {
             include: {
@@ -101,6 +169,11 @@ export class ConductorService {
               },
             },
           },
+          scans: {
+            select: {
+              id: true,
+            }
+          }
         },
       });
 
@@ -108,29 +181,33 @@ export class ConductorService {
         throw new CustomError("Pass not found", 404);
       }
 
+      if (pass.application.passType.perDayLimit < pass.scans.length) {
+        throw new CustomError("Daily limit exceeded", 400);
+      }
+
       const now = new Date();
       const isExpired = now > pass.validUntil;
       const isNotStarted = now < pass.validFrom;
 
       // Create verification record
-      const verification = await prisma.conductorScan.create({
-        data: {
-          busPass: {
-            connect: {
-              id: pass.id,
-            },
-          },
-          conductor: {
-            connect: {
-              id: conductorId,
-            },
-          },
-          scanMethod,
-          isValid: !isExpired && !isNotStarted && pass.status === "ACTIVE",
-        },
-      });
+      // const verification = await prisma.conductorScan.create({
+      //   data: {
+      //     busPass: {
+      //       connect: {
+      //         id: pass.id,
+      //       },
+      //     },
+      //     conductor: {
+      //       connect: {
+      //         id: conductorId,
+      //       },
+      //     },
+      //     scanMethod,
+      //     isValid: !isExpired && !isNotStarted && pass.isActive === true,
+      //   },
+      // });
 
-      return verification;
+      return pass;
     } catch (error) {
       throw new CustomError(
         error.message || "Error verifying pass",

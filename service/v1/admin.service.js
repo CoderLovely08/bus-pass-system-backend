@@ -96,7 +96,7 @@ export class AdminService {
     static async getApplicationDetails(applicationId) {
         try {
             const application = await prisma.passApplication.findUnique({
-                where: { id: applicationId },
+                where: { id: applicationId, paymentStatus: PAYMENT_STATUS.COMPLETED },
                 include: {
                     user: {
                         select: {
@@ -107,6 +107,7 @@ export class AdminService {
                     },
                     passType: true,
                     documents: true,
+                    payments: true,
                 },
             });
 
@@ -190,7 +191,7 @@ export class AdminService {
                         validTo.getDate() + application.passType.durationDays
                     );
 
-                    const passNumber = generateRandomString(10);
+                    const passNumber = generateRandomString(4);
 
                     await prisma.busPass.create({
                         data: {

@@ -137,3 +137,9 @@ export const PASS_STATUS = Object.freeze({
   APPROVED: "APPROVED",
   REJECTED: "REJECTED",
 });
+
+export const SCAN_METHOD = Object.freeze({
+  QR_CODE: "QR_CODE",
+  MANUAL_ENTRY: "MANUAL_ENTRY",
+});
+

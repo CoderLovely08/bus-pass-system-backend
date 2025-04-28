@@ -9,6 +9,14 @@ import { ConductorController } from "../../controllers/v1/Conductor.controller.j
 
 const router = express.Router();
 
+
+router.get(
+  "/stats",
+  validateToken,
+  checkRole([USER_TYPES.CONDUCTOR]),
+  ConductorController.handleGetDashboard
+);
+
 // Verify pass by pass number
 router.post(
   "/verify-pass",
