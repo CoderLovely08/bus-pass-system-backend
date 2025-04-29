@@ -4,9 +4,9 @@ import {
   higherOrderUserDataValidation,
   validateRequestParams,
 } from "../../middlewares/validation.middleware.js";
-import { VALIDATION_TYPES } from "../../utils/constants/app.constant.js";
 import { PassengerController } from "../../controllers/v1/Passenger.controller.js";
 import upload from "../../config/multer.config.js";
+import { ValidationSchema } from "../../schema/validation.schema.js";
 
 const router = express.Router();
 
@@ -17,18 +17,7 @@ router.post(
   "/apply",
   validateToken,
   upload.single("document"),
-  higherOrderUserDataValidation([
-    {
-      field: "passTypeId",
-      type: VALIDATION_TYPES.INTEGER,
-      required: true,
-    },
-    {
-      field: "documentType",
-      type: VALIDATION_TYPES.STRING,
-      required: true,
-    },
-  ]),
+  higherOrderUserDataValidation(ValidationSchema.passApplicationSchema),
   PassengerController.handlePostBusPassApplication
 );
 
@@ -36,9 +25,7 @@ router.post(
 router.get(
   "/pass/:passId",
   validateToken,
-  validateRequestParams([
-    { field: "passId", type: VALIDATION_TYPES.INTEGER, required: true },
-  ]),
+  validateRequestParams(ValidationSchema.passIdSchema),
   PassengerController.handleGetPassDetails
 );
 
@@ -52,18 +39,7 @@ router.get("/pass-types", PassengerController.handleGetPassTypes);
 router.post(
   "/payment",
   validateToken,
-  higherOrderUserDataValidation([
-    {
-      field: "passId",
-      type: VALIDATION_TYPES.INTEGER,
-      required: true,
-    },
-    {
-      field: "paymentMethod",
-      type: VALIDATION_TYPES.STRING,
-      required: true,
-    },
-  ]),
+  higherOrderUserDataValidation(ValidationSchema.paymentSchema),
   PassengerController.handlePostPayment
 );
 

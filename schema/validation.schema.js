@@ -79,4 +79,37 @@ export class ValidationSchema {
       },
     },
   ];
+
+  // Pass ID Schema
+  static passIdSchema = [
+    { field: "passId", type: VALIDATION_TYPES.INTEGER, required: true },
+  ];
+
+  // Pass Application Schema
+  static passApplicationSchema = [
+    {
+      field: "passTypeId",
+      type: VALIDATION_TYPES.INTEGER,
+      required: true,
+    },
+    {
+      field: "documentType",
+      type: VALIDATION_TYPES.STRING,
+      required: true,
+    },
+  ];
+
+  // Payment Schema
+  static paymentSchema = [
+    {
+      field: "passId",
+      type: VALIDATION_TYPES.INTEGER,
+      required: true,
+    },
+    {
+      field: "paymentMethod",
+      type: VALIDATION_TYPES.STRING,
+      required: true,
+    },
+  ];
 }
