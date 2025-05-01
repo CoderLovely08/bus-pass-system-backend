@@ -4,6 +4,7 @@ import { generateRandomString } from "../../utils/helpers/app.helpers.js";
 import {
     PASS_STATUS,
     PAYMENT_STATUS,
+    USER_TYPES,
 } from "../../utils/constants/app.constant.js";
 
 export class AdminService {
@@ -385,6 +386,7 @@ export class AdminService {
                 pendingApplications,
                 activePasses,
                 totalRevenue,
+                recentUsers,
             ] = await Promise.all([
                 prisma.passApplication.count(),
                 prisma.passApplication.count({
@@ -406,6 +408,25 @@ export class AdminService {
                         amount: true,
                     },
                 }),
+                prisma.systemUsersInfo.findMany({
+                    where: {
+                        userType: {
+                            name: {
+                                in: [USER_TYPES.PASSENGER],
+                            },
+                        },
+                    },
+                    select: {
+                        id: true,
+                        fullName: true,
+                        email: true,
+                        createdAt: true,
+                    },
+                    orderBy: {
+                        createdAt: "desc",
+                    },
+                    take: 5,
+                }),
             ]);
 
             return {
@@ -413,6 +434,7 @@ export class AdminService {
                 pendingApplications,
                 activePasses,
                 totalRevenue: totalRevenue._sum.amount || 0,
+                recentUsers
             };
         } catch (error) {
             throw new CustomError(
