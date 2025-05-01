@@ -262,6 +262,7 @@ export class AdminService {
         duration,
         price,
         description,
+        perDayLimit,
         adminId,
     }) {
         try {
@@ -281,10 +282,10 @@ export class AdminService {
             const passType = await prisma.passType.create({
                 data: {
                     name,
-                    duration,
+                    durationDays: duration,
                     price,
                     description,
-                    createdBy: adminId,
+                    perDayLimit,
                 },
             });
 

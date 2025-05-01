@@ -148,13 +148,14 @@ export class ConductorService {
     try {
       const pass = await prisma.busPass.findUnique({
         where: {
-          passNumber, scans: {
-            some: {
-              scanTime: {
-                gte: new Date(new Date().setDate(new Date().getDate() - 3)),
-              }
-            }
-          }
+          passNumber,
+          //  scans: {
+          //   some: {
+          //     scanTime: {
+          //       gte: new Date(new Date().setDate(new Date().getDate() - 3)),
+          //     }
+          //   }
+          // }
         },
         include: {
           application: {
@@ -190,22 +191,22 @@ export class ConductorService {
       const isNotStarted = now < pass.validFrom;
 
       // Create verification record
-      // const verification = await prisma.conductorScan.create({
-      //   data: {
-      //     busPass: {
-      //       connect: {
-      //         id: pass.id,
-      //       },
-      //     },
-      //     conductor: {
-      //       connect: {
-      //         id: conductorId,
-      //       },
-      //     },
-      //     scanMethod,
-      //     isValid: !isExpired && !isNotStarted && pass.isActive === true,
-      //   },
-      // });
+      const verification = await prisma.conductorScan.create({
+        data: {
+          busPass: {
+            connect: {
+              id: pass.id,
+            },
+          },
+          conductor: {
+            connect: {
+              id: conductorId,
+            },
+          },
+          scanMethod,
+          isValid: !isExpired && !isNotStarted && pass.isActive === true,
+        },
+      });
 
       return pass;
     } catch (error) {

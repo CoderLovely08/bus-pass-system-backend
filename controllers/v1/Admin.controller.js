@@ -131,7 +131,7 @@ export class AdminController {
    */
   static async handlePostPassType(req, res) {
     try {
-      const { name, duration, price, description } = req.body;
+      const { name, duration, price, description, perDayLimit } = req.body;
       const adminId = req.user.userId;
 
       const passType = await AdminService.createPassType({
@@ -139,6 +139,7 @@ export class AdminController {
         duration,
         price,
         description,
+        perDayLimit,
         adminId,
       });
 
