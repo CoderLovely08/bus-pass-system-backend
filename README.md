@@ -2,6 +2,10 @@
 
 A modern digital solution for managing and verifying bus passes using QR codes. Built with Node.js, Express, Prisma, PostgreSQL for the backend, and React, React Query, Tailwind CSS for the frontend.
 
+## Frontend Repository
+
+The frontend repository is available at [Here](https://github.com/CoderLovely08/bus-pass-system-frontend).
+
 ## Project Overview
 
 The system digitizes the entire bus pass lifecycle - from application to verification, eliminating the need for physical passes. It consists of three core modules:
